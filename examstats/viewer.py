@@ -75,10 +75,16 @@ def plot_subject_distribution(exam, scores, subject, ax):
     ax.legend(loc='upper left')
 
 
+# if all scores are 0, show a warning
+if all(score == 0 for score in scores.values()):
+    st.warning('请在左侧输入您的成绩。')
+
+st.write(exam)
+
 fig, ax = plt.subplots(3, 3, figsize=(12, 8))
 ax = ax.flatten()
 for i, (sub, score) in enumerate(scores.items()):
     plot_subject_distribution(exam, scores, sub, ax[i])
 fig.tight_layout()
 st.pyplot(fig)
-st.caption('**注意：** 以上分布仅供参考，不代表真实分布。排名根据正态分布估计，可能存在误差。数据仅个人可见，不会被保存。')
+st.caption('**注意：** 移动端请用系统浏览器打开以获得最佳体验。以上分布仅供参考，不代表真实分布。排名根据正态分布估计，可能存在误差。数据仅个人可见，不会被记录。')
