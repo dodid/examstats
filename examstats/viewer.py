@@ -35,7 +35,7 @@ exam = st.sidebar.selectbox('选择考试', list(exams.keys()))
 
 t1, t2 = st.sidebar.tabs(['录入成绩', '上传成绩'])
 
-upload = t2.file_uploader('上传成绩', type='csv')
+upload = t2.file_uploader('此处可上传之前下载保存的成绩', type='csv')
 
 if upload:
     scores = pd.read_csv(upload).to_dict(orient='records')[0]
