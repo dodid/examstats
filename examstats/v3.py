@@ -179,6 +179,7 @@ def plot_score_diff_waterfall_chart(exam, scores, sort=False):
     return fig
 
 
+@st.cache_data
 def plot_subject_percentile_chart(exam, scores, delta=0):
     fig, ax = plt.subplots(figsize=(12, 5))
     for sub in exams[exam]['subject'].keys():
