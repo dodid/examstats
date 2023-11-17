@@ -5,7 +5,8 @@ import scipy
 import streamlit as st
 from matplotlib import pyplot as plt
 
-matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
+# matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
+matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei', 'Heiti TC', 'STHeiti', 'SimHei', 'Microsoft YaHei']
 
 st.set_page_config(page_title='北京四中考试成绩分析', layout='wide')
 
@@ -150,14 +151,76 @@ def plot_all_subject_distribution(exam, scores):
     return fig
 
 
+@st.cache_data
+def plot_score_diff_waterfall_chart(exam, scores, sort=False):
+    # plot stacked waterfall chart vertically showing how difference in each subject contributes to the total difference
+    fig, ax = plt.subplots(figsize=(12, 5))
+    # calculate difference
+    diffs = {sub: scores[sub] - exams[exam]['subject'][sub]['mean'] for sub in exams[exam]['subject'].keys()}
+    # sort by difference
+    if sort:
+        diffs = dict(sorted(diffs.items(), key=lambda item: item[1], reverse=True))
+    # plot cumulative difference
+    cumsum = 0
+    for sub, diff in diffs.items():
+        cumsum += diff
+        label = f'{diff:.0f} ({cumsum:.0f})'
+        if diff > 0:
+            ax.vlines(sub, cumsum-diff, cumsum, color='r', linewidth=73, alpha=0.8)
+            ax.text(sub, cumsum, label, ha='center', va='bottom')
+        else:
+            ax.vlines(sub, cumsum, cumsum-diff, color='g', linewidth=73, alpha=0.8)
+            ax.text(sub, cumsum-diff, label, ha='center', va='bottom')
+    # plot zero line
+    ax.axhline(0, color='k', linewidth=1, linestyle='--')
+    ax.set_ylabel('累计均分差异')
+    ax.set_title('各学科平均分差异分析')
+    ax.set_xlim(-0.5, len(diffs)-0.5)
+    return fig
+
+
+def plot_subject_percentile_chart(exam, scores, delta=0):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    for sub in exams[exam]['subject'].keys():
+        stats = exams[exam]['subject'][sub]
+        percentile = scipy.stats.percentileofscore(
+            np.random.normal(stats['mean'], stats['std'], 10000), scores[sub])
+        rank = int((100 - percentile) / 100 * stats['count'])
+        ax.vlines(sub, 0, 100, color='grey', linewidth=1, linestyle='--')
+        ax.scatter(sub, percentile, color='r', s=50, zorder=3)
+        if delta > 0:
+            ax.annotate(f'{percentile:.1f}% ({rank})', (sub, max(0, percentile-2)), ha='center', va='top', color='r', zorder=4)
+        else:
+            ax.annotate(f'{percentile:.1f}% ({rank})', (sub, percentile+2), ha='center', va='bottom', color='r', zorder=4)
+        if delta != 0:
+            percentile2 = scipy.stats.percentileofscore(
+                np.random.normal(stats['mean'], stats['std'], 10000), scores[sub]+delta)
+            rank2 = int((100 - percentile2) / 100 * stats['count'])
+            ax.scatter(sub, percentile2, color='g', s=50, zorder=3)
+            label = f'{percentile2:.1f}% ({rank-rank2:+.0f})'
+            if delta > 0:
+                ax.annotate(label, (sub, min(100, percentile2+2)), ha='center', va='bottom', color='g', zorder=4)
+            else:
+                ax.annotate(label, (sub, percentile2-2), ha='center', va='top', color='g', zorder=4)
+    ax.set_xlim(-0.5, len(exams[exam]['subject'])-0.5)
+    ax.set_ylim(0, 100)
+    ax.set_ylabel('百分位')
+    ax.set_title('各学科百分位和敏感度分析', pad=20)
+    return fig
+
+
 # if all scores are 0, show a warning
 if all(score == 0 for score in scores.values()):
     st.warning('请在左侧输入您的成绩。')
 
 st.write(exam)
 
-tb1, tb2, tb3 = st.tabs(['单科分布', '组合分布', '学科分布'])
+tb1, tb2, tb3, tb4, tb5 = st.tabs(['单科分布', '组合分布', '均分差异', '学科优势', '学科分布'])
 tb1.pyplot(plot_subject_3by3_chart(exam, scores, plot_subject_distribution))
 tb2.pyplot(plot_group_3by3_chart(exam, scores, plot_group_distribution))
-tb3.pyplot(plot_all_subject_distribution(exam, scores))
+diff_sort = tb3.checkbox('按差异排序')
+tb3.pyplot(plot_score_diff_waterfall_chart(exam, scores, diff_sort))
+delta = tb4.slider('分数变化', -20, 20, 0)
+tb4.pyplot(plot_subject_percentile_chart(exam, scores, delta))
+tb5.pyplot(plot_all_subject_distribution(exam, scores))
 st.caption('**注意：** 移动端请用系统浏览器打开以获得最佳体验。以上分布仅供参考，不代表真实分布。排名根据正态分布估计，可能存在误差。数据仅个人可见，不会被记录。')
