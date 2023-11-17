@@ -5,7 +5,7 @@ import scipy
 import streamlit as st
 from matplotlib import pyplot as plt
 
-matplotlib.rcParams['font.family'] = ['Heiti TC']
+matplotlib.rcParams['font.family'] = ['SimHei']
 
 st.set_page_config(page_title='Grade Viewer', layout='wide')
 
