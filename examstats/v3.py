@@ -5,8 +5,8 @@ import scipy
 import streamlit as st
 from matplotlib import pyplot as plt
 
-# matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
-matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei', 'Heiti TC', 'STHeiti', 'SimHei', 'Microsoft YaHei']
+matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
+# matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei', 'Heiti TC']
 
 st.set_page_config(page_title='北京四中考试成绩分析', layout='wide')
 
