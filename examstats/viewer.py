@@ -5,7 +5,7 @@ import scipy
 import streamlit as st
 from matplotlib import pyplot as plt
 
-matplotlib.rcParams['font.family'] = ['Deja vu Sans']
+matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
 
 st.set_page_config(page_title='Grade Viewer', layout='wide')
 
