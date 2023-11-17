@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
 
-st.set_page_config(page_title='Grade Viewer', layout='wide')
+st.set_page_config(page_title='北京四中考试成绩分析', layout='wide')
 
 exams = {
     '2026届高一上学期期中考试(2023-11)': {
