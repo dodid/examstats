@@ -5,7 +5,7 @@ import scipy
 import streamlit as st
 from matplotlib import pyplot as plt
 
-matplotlib.rcParams['font.family'] = ['SimHei']
+matplotlib.rcParams['font.family'] = ['AR PL SungtiL GB']
 
 st.set_page_config(page_title='Grade Viewer', layout='wide')
 
