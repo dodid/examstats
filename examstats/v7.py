@@ -26,7 +26,7 @@ urls = [
 ]
 random.shuffle(urls)
 
-st.info(f'如果服务响应缓慢，您可以尝试使用备份服务：{urls[0]} 或 {urls[1]}', icon='🔗')
+st.info(f'如果服务响应缓慢，可尝试使用备份服务：{urls[0]} 或 {urls[1]}', icon='🔗')
 
 exams = {
     '2026届高一上学期期中考试(2023-11)': {
@@ -51,7 +51,6 @@ exams = {
 st.sidebar.subheader('北京四中考试成绩分析')
 
 exam = st.sidebar.selectbox('选择考试', list(exams.keys()))
-
 
 t1, t2 = st.sidebar.tabs(['录入成绩', '上传成绩'])
 
@@ -85,8 +84,7 @@ def plot_subject_distribution(exam, scores, subject, ax):
     ax.vlines(scores[subject], 0, 0.1, label='我的成绩', color='r', linestyle='--', linewidth=1)
     ax.annotate(f'{scores[subject]}', (scores[subject], 0.06), xytext=(scores[subject]+1, 0.06), color='r')
     # calculate percentile
-    percentile = scipy.stats.percentileofscore(
-        np.random.normal(stats['mean'], stats['std'], 10000), scores[subject])
+    percentile = scipy.stats.norm.cdf(scores[subject], stats['mean'], stats['std']) * 100
     rank = int((100 - percentile) / 100 * stats['count'])
     # format
     ax.set_xlim(0, stats['total']+1)
@@ -95,7 +93,7 @@ def plot_subject_distribution(exam, scores, subject, ax):
     ax.legend(loc='upper left')
 
 
-@st.cache_data
+@st.cache_data(ttl='10m')
 def plot_subject_3by3_chart(exam, scores, _plot_func):
     fig, ax = plt.subplots(3, 3, figsize=(12, 8))
     ax = ax.flatten()
@@ -121,8 +119,7 @@ def plot_group_distribution(exam, scores, group, ax):
     ax.vlines(score, 0, 0.1, label='我的成绩', color='r', linestyle='--', linewidth=1)
     ax.annotate(f'{score}', (score, 0.011), xytext=(score+1, 0.011), color='r')
     # calculate percentile
-    percentile = scipy.stats.percentileofscore(
-        np.random.normal(stats['mean'], stats['std'], 10000), score)
+    percentile = scipy.stats.norm.cdf(score, stats['mean'], stats['std']) * 100
     rank = int((100 - percentile) / 100 * stats['count'])
     # format
     ax.set_xlim(0, total+1)
@@ -132,7 +129,7 @@ def plot_group_distribution(exam, scores, group, ax):
     ax.legend(loc='upper left')
 
 
-@st.cache_data
+@st.cache_data(ttl='10m')
 def plot_subject_3by3_chart(exam, scores, _plot_func):
     fig, ax = plt.subplots(3, 3, figsize=(12, 8))
     ax = ax.flatten()
@@ -142,7 +139,7 @@ def plot_subject_3by3_chart(exam, scores, _plot_func):
     return fig
 
 
-@st.cache_data
+@st.cache_data(ttl='10m')
 def plot_group_3by3_chart(exam, scores, _plot_func):
     fig, ax = plt.subplots(3, 3, figsize=(12, 8))
     ax = ax.flatten()
@@ -154,7 +151,7 @@ def plot_group_3by3_chart(exam, scores, _plot_func):
     return fig
 
 
-@st.cache_resource
+@st.cache_resource(ttl='1d')
 def plot_all_subject_distribution(exam, scores):
     # plot all bell curves of 9 subjects in one chart
     fig, ax = plt.subplots(figsize=(12, 5))
@@ -169,7 +166,7 @@ def plot_all_subject_distribution(exam, scores):
     return fig
 
 
-@st.cache_data
+@st.cache_data(ttl='10m')
 def plot_score_diff_waterfall_chart(exam, scores, sort=False):
     # plot stacked waterfall chart vertically showing how difference in each subject contributes to the total difference
     fig, ax = plt.subplots(figsize=(12, 5))
@@ -197,13 +194,12 @@ def plot_score_diff_waterfall_chart(exam, scores, sort=False):
     return fig
 
 
-@st.cache_data
+@st.cache_data(ttl='10m')
 def plot_subject_percentile_chart(exam, scores, delta=0):
     fig, ax = plt.subplots(figsize=(12, 5))
     for sub in exams[exam]['subject'].keys():
         stats = exams[exam]['subject'][sub]
-        percentile = scipy.stats.percentileofscore(
-            np.random.normal(stats['mean'], stats['std'], 10000), scores[sub])
+        percentile = scipy.stats.norm.cdf(scores[sub], stats['mean'], stats['std']) * 100
         rank = int((100 - percentile) / 100 * stats['count'])
         ax.vlines(sub, 0, 100, color='grey', linewidth=1, linestyle='--')
         ax.scatter(sub, percentile, color='r', s=50, zorder=3)
@@ -212,8 +208,7 @@ def plot_subject_percentile_chart(exam, scores, delta=0):
         else:
             ax.annotate(f'{percentile:.1f}% ({rank})', (sub, percentile+2), ha='center', va='bottom', color='r', zorder=4)
         if delta != 0:
-            percentile2 = scipy.stats.percentileofscore(
-                np.random.normal(stats['mean'], stats['std'], 10000), scores[sub]+delta)
+            percentile2 = scipy.stats.norm.cdf(scores[sub]+delta, stats['mean'], stats['std']) * 100
             rank2 = int((100 - percentile2) / 100 * stats['count'])
             ax.scatter(sub, percentile2, color='g', s=50, zorder=3)
             label = f'{percentile2:.1f}% ({rank-rank2:+.0f})'

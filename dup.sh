@@ -1,0 +1,9 @@
+cp examstats/viewer.py examstats/v1.py
+cp examstats/viewer.py examstats/v2.py
+cp examstats/viewer.py examstats/v3.py
+cp examstats/viewer.py examstats/v4.py
+cp examstats/viewer.py examstats/v5.py
+cp examstats/viewer.py examstats/v6.py
+cp examstats/viewer.py examstats/v7.py
+cp examstats/viewer.py examstats/v8.py
+cp examstats/viewer.py examstats/v9.py
