@@ -1,3 +1,5 @@
+import random
+
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -9,6 +11,22 @@ matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
 # matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei', 'Heiti TC']
 
 st.set_page_config(page_title='北京四中考试成绩分析', layout='wide')
+
+urls = [
+    'https://examstats.streamlit.app',
+    'https://examstats1.streamlit.app',
+    'https://examstats2.streamlit.app',
+    'https://examstats3.streamlit.app',
+    'https://examstats4.streamlit.app',
+    'https://examstats5.streamlit.app',
+    'https://examstats6.streamlit.app',
+    'https://examstats7.streamlit.app',
+    'https://examstats8.streamlit.app',
+    'https://examstats9.streamlit.app',
+]
+random.shuffle(urls)
+
+st.info(f'如果服务响应缓慢，您可以尝试使用备份服务：{urls[0]} 或 {urls[1]}', icon='🔗')
 
 exams = {
     '2026届高一上学期期中考试(2023-11)': {
