@@ -8,7 +8,7 @@ import streamlit as st
 from matplotlib import pyplot as plt
 
 matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
-# matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei', 'Heiti TC']
+# matplotlib.rcParams['font.family'] = ['Heiti TC']
 
 st.set_page_config(page_title='北京四中考试成绩分析', layout='wide')
 
@@ -28,7 +28,8 @@ random.shuffle(urls)
 
 st.info(f'如果服务响应缓慢，可尝试使用备份服务：{urls[0]} 或 {urls[1]}', icon='🔗')
 
-exams = {
+if 'exams' not in st.session_state:
+    st.session_state['exams'] = {
     '2026届高一上学期期中考试(2023-11)': {
         'subject': {
             '语文': {'total': 150, 'max': 136, 'median': 107, 'mean': 106.9, 'std': 6.9, 'count': 627},
@@ -45,29 +46,48 @@ exams = {
             '语数英总分': {'max': 414, 'median': 357, 'mean': 352.2, 'std': 28, 'count': 624, 'include': ['语文', '数学', '英语']},
             '9科总分': {'max': 950, 'median': 815.5, 'mean': 803.7, 'std': 87, 'count': 623, 'include': ['语文', '数学', '英语', '物理', '化学', '生物', '政治', '历史', '地理']},
         }
+    },
+    '2026届高一下学期期末考试(2024-01)': {
+        'subject': {
+            '语文': {'total': 150, 'max': 128, 'median': 111, 'mean': 111.1, 'std': 7.30, 'count': 628},
+            '数学': {'total': 150, 'max': 147, 'median': 127, 'mean': 124.6, 'std': 11.56, 'count': 628},
+            '英语': {'total': 150, 'max': 147, 'median': 133.5, 'mean': 131.2, 'std': 7.97, 'count': 627},
+            '物理': {'total': 100, 'max': 100, 'median': 78, 'mean': 75.8, 'std': 15.90, 'count': 627},
+            '化学': {'total': 150, 'max': 145, 'median': 122, 'mean': 117.6, 'std': 24.71, 'count': 627},
+            '生物': {'total': 100, 'max': 98, 'median': 79, 'mean': 77, 'std': 12, 'count': 628},
+            '政治': {'total': 100, 'max': 96, 'median': 79, 'mean': 77.2, 'std': 6.67, 'count': 628},
+            '历史': {'total': 100, 'max': 100, 'median': 87.5, 'mean': 86.1, 'std': 5.2, 'count': 627},
+            '地理': {'total': 100, 'max': 100, 'median': 89, 'mean': 87.5, 'std': 1.92, 'count': 626},
+        },
+        'group': {
+            '语数英总分': {'max': 410.5, 'median': 371, 'mean': 366.5, 'std': 17.67, 'count': 627, 'include': ['语文', '数学', '英语']},
+            '9科总分': {'max': 988.2, 'median': 861.7, 'mean': 848.5, 'std': 60.92, 'count': 625, 'include': ['语文', '数学', '英语', '物理', '化学', '生物', '政治', '历史', '地理'], 'scale': [1, 1, 1, 1, 100.0/150, 1, 1, 1, 1]},
+        }
     }
 }
 
+exams = st.session_state['exams']
+
 st.sidebar.subheader('北京四中考试成绩分析')
 
-exam = st.sidebar.selectbox('选择考试', list(exams.keys()))
+exam = st.sidebar.selectbox('选择考试', list(exams.keys()), index=len(exams)-1)
 
 t1, t2 = st.sidebar.tabs(['录入成绩', '上传成绩'])
 
-upload = t2.file_uploader('此处可上传之前下载保存的成绩', type='csv')
+upload = t2.file_uploader('此处可上传之前下载保存的成绩', type='csv', key=f'{exam}-upload')
 
 if upload:
-    scores = pd.read_csv(upload).to_dict(orient='records')[0]
-else:
-    scores = {sub: 0 for sub in exams[exam]['subject'].keys()}
+    exams[exam]['scores'] = pd.read_csv(upload).to_dict(orient='records')[0]
+elif 'scores' not in exams[exam]:
+    exams[exam]['scores'] = {sub: 0 for sub in exams[exam]['subject'].keys()}
 
-scores = {
+exams[exam]['scores'] = {
     sub: t1.number_input(
         sub, min_value=0.0, max_value=float(exams[exam]['subject'][sub]['total']),
-        value=float(scores[sub]), step=1.0) for sub in exams[exam]['subject'].keys()}
+        value=float(exams[exam]['scores'][sub]), step=1.0, key=f'{exam}-{sub}-ni') for sub in exams[exam]['subject'].keys()}
 
 
-t1.download_button('下载保存', pd.DataFrame(scores, index=[0]).to_csv(index=False), f'{exam}.csv', 'text/csv')
+t1.download_button('下载保存', pd.DataFrame(exams[exam]['scores'], index=[0]).to_csv(index=False), f'{exam}.csv', 'text/csv')
 
 
 def plot_subject_distribution(exam, scores, subject, ax):
@@ -105,7 +125,12 @@ def plot_subject_3by3_chart(exam, scores, _plot_func):
 
 def plot_group_distribution(exam, scores, group, ax):
     stats = exams[exam]['group'][group]
-    total = sum(exams[exam]['subject'][sub]['total'] for sub in stats['include'])
+    if 'scale' not in stats:
+        total = sum(exams[exam]['subject'][sub]['total'] for sub in stats['include'])
+        score = sum(scores[sub] for sub in stats['include'])
+    else:
+        total = sum(exams[exam]['subject'][sub]['total'] * stats['scale'][i] for i, sub in enumerate(stats['include']))
+        score = sum(scores[sub] * stats['scale'][i] for i, sub in enumerate(stats['include']))
     x = np.linspace(0, total, 400)
     ax.plot(x, scipy.stats.norm.pdf(x, stats['mean'], stats['std']), label='成绩分布')
     # mark mean on the curve
@@ -115,7 +140,6 @@ def plot_group_distribution(exam, scores, group, ax):
     ax.vlines(stats['max'], 0, 0.1, label='最高分', color='b', linestyle='--', linewidth=1)
     ax.annotate(f'{stats["max"]}', (stats['max'], 0.018), xytext=(stats['max']+1, 0.018))
     # mark score on the curve
-    score = sum(scores[sub] for sub in stats['include'])
     ax.vlines(score, 0, 0.1, label='我的成绩', color='r', linestyle='--', linewidth=1)
     ax.annotate(f'{score}', (score, 0.011), xytext=(score+1, 0.011), color='r')
     # calculate percentile
@@ -161,7 +185,7 @@ def plot_all_subject_distribution(exam, scores):
         ax.plot(x, scipy.stats.norm.pdf(x, stats['mean'], stats['std']), label=sub)
     xrange = max([v['max'] for k, v in exams[exam]['subject'].items()])+1
     ax.set_xlim(0, xrange)
-    ax.set_ylim(0, 0.1)
+    ax.set_ylim(0, 0.10)
     ax.legend(loc='upper left')
     return fig
 
@@ -224,17 +248,17 @@ def plot_subject_percentile_chart(exam, scores, delta=0):
 
 
 # if all scores are 0, show a warning
-if all(score == 0 for score in scores.values()):
+if all(score == 0 for score in exams[exam]['scores'].values()):
     st.warning('请在左侧输入您的成绩。')
 
 st.write(exam)
 
 tb1, tb2, tb3, tb4, tb5 = st.tabs(['单科分布', '组合分布', '均分差异', '学科优势', '学科分布'])
-tb1.pyplot(plot_subject_3by3_chart(exam, scores, plot_subject_distribution))
-tb2.pyplot(plot_group_3by3_chart(exam, scores, plot_group_distribution))
+tb1.pyplot(plot_subject_3by3_chart(exam, exams[exam]['scores'], plot_subject_distribution))
+tb2.pyplot(plot_group_3by3_chart(exam, exams[exam]['scores'], plot_group_distribution))
 diff_sort = tb3.checkbox('按差异排序')
-tb3.pyplot(plot_score_diff_waterfall_chart(exam, scores, diff_sort))
+tb3.pyplot(plot_score_diff_waterfall_chart(exam, exams[exam]['scores'], diff_sort))
 delta = tb4.slider('分数变化', -20, 20, 0)
-tb4.pyplot(plot_subject_percentile_chart(exam, scores, delta))
-tb5.pyplot(plot_all_subject_distribution(exam, scores))
+tb4.pyplot(plot_subject_percentile_chart(exam, exams[exam]['scores'], delta))
+tb5.pyplot(plot_all_subject_distribution(exam, exams[exam]['scores']))
 st.caption('**注意：** 移动端请用系统浏览器打开以获得最佳体验。以上分布仅供参考，不代表真实分布。排名根据正态分布估计，可能存在误差。数据仅个人可见，不会被记录。')
