@@ -6,6 +6,7 @@ import pandas as pd
 import scipy
 import streamlit as st
 from matplotlib import pyplot as plt
+from streamlit.components.v1 import html
 
 matplotlib.rcParams['font.family'] = ['WenQuanYi Zen Hei']
 # matplotlib.rcParams['font.family'] = ['Heiti TC']
@@ -262,3 +263,26 @@ delta = tb4.slider('分数变化', -20, 20, 0)
 tb4.pyplot(plot_subject_percentile_chart(exam, exams[exam]['scores'], delta))
 tb5.pyplot(plot_all_subject_distribution(exam, exams[exam]['scores']))
 st.caption('**注意：** 移动端请用系统浏览器打开以获得最佳体验。以上分布仅供参考，不代表真实分布。排名根据正态分布估计，可能存在误差。数据仅个人可见，不会被记录。')
+
+
+#this code below is the statcounter tracking code
+takip= """
+<!-- Default Statcounter code for FOUR
+https://examstats.streamlit.app -->
+<script type="text/javascript">
+var sc_project=12987808; 
+var sc_invisible=1; 
+var sc_security="bdb43828"; 
+</script>
+<script type="text/javascript"
+src="https://www.statcounter.com/counter/counter.js"
+async></script>
+<noscript><div class="statcounter"><a title="Web Analytics"
+href="https://statcounter.com/" target="_blank"><img
+class="statcounter"
+src="https://c.statcounter.com/12987808/0/bdb43828/1/"
+alt="Web Analytics"
+referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
+<!-- End of Statcounter Code -->
+"""
+html(takip,width=1, height=1)
