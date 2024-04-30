@@ -48,7 +48,7 @@ if 'exams' not in st.session_state:
             '9科总分': {'max': 950, 'median': 815.5, 'mean': 803.7, 'std': 87, 'count': 623, 'include': ['语文', '数学', '英语', '物理', '化学', '生物', '政治', '历史', '地理']},
         }
     },
-    '2026届高一下学期期末考试(2024-01)': {
+    '2026届高一上学期期末考试(2024-01)': {
         'subject': {
             '语文': {'total': 150, 'max': 128, 'median': 111, 'mean': 111.1, 'std': 7.30, 'count': 628},
             '数学': {'total': 150, 'max': 147, 'median': 127, 'mean': 124.6, 'std': 11.56, 'count': 628},
@@ -63,6 +63,23 @@ if 'exams' not in st.session_state:
         'group': {
             '语数英总分': {'max': 410.5, 'median': 371, 'mean': 366.5, 'std': 17.67, 'count': 627, 'include': ['语文', '数学', '英语']},
             '9科总分': {'max': 988.2, 'median': 861.7, 'mean': 848.5, 'std': 60.92, 'count': 625, 'include': ['语文', '数学', '英语', '物理', '化学', '生物', '政治', '历史', '地理'], 'scale': [1, 1, 1, 1, 100.0/150, 1, 1, 1, 1]},
+        }
+    },
+    '2026届高一下学期期中考试(2024-04)': {
+        'subject': {
+            '语文': {'total': 150, 'max': 131, 'median': 109, 'mean': 108.2, 'std': 7.88, 'count': 623},
+            '数学': {'total': 150, 'max': 145, 'median': 117, 'mean': 113.4, 'std': 4.52, 'count': 623},
+            '英语': {'total': 150, 'max': 145.5, 'median': 126.5, 'mean': 123.0, 'std': 11.22, 'count': 625},
+            '物理': {'total': 100, 'max': 100, 'median': 69, 'mean': 66.1, 'std': 65, 'count': 623},
+            '化学': {'total': 100, 'max': 99, 'median': 73, 'mean': 69.9, 'std': 14.40, 'count': 627},
+            '生物': {'total': 100, 'max': 96, 'median': 66, 'mean': 62.8, 'std': 20, 'count': 624},
+            '政治': {'total': 100, 'max': 95, 'median': 74, 'mean': 72.6, 'std': 14.67, 'count': 624},
+            '历史': {'total': 100, 'max': 95.5, 'median': 82, 'mean': 81.2, 'std': 7.35, 'count': 623},
+            '地理': {'total': 100, 'max': 92, 'median': 72, 'mean': 71.5, 'std': 25, 'count': 624},
+        },
+        'group': {
+            '语数英总分': {'max': 409.5, 'median': 353, 'mean': 344.6, 'std': 247.5, 'count': 621, 'include': ['语文', '数学', '英语']},
+            '9科总分': {'max': 966.5, 'median': 782, 'mean': 768.7, 'std': 126.78, 'count': 621, 'include': ['语文', '数学', '英语', '物理', '化学', '生物', '政治', '历史', '地理']},
         }
     }
 }
@@ -97,7 +114,7 @@ def plot_subject_distribution(exam, scores, subject, ax):
     ax.plot(x, scipy.stats.norm.pdf(x, stats['mean'], stats['std']), label='成绩分布')
     # mark mean on the curve
     ax.vlines(stats['mean'], 0, 0.1, label='平均分', color='g', linestyle='--', linewidth=1)
-    ax.annotate(f'{stats["mean"]:.0f}', (stats['mean'], 0.005), xytext=(stats['mean']+1, 0.005))
+    ax.annotate(f'{stats["mean"]:.1f}', (stats['mean'], 0.005), xytext=(stats['mean']+1, 0.005))
     # mark maximum on the curve
     ax.vlines(stats['max'], 0, 0.1, label='最高分', color='b', linestyle='--', linewidth=1)
     ax.annotate(f'{stats["max"]}', (stats['max'], 0.09), xytext=(stats['max']+1, 0.09))
